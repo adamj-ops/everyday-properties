@@ -13,9 +13,267 @@ datasource db {
   relationMode = "prisma"
 }
 
-// This is a stub model.
-// Delete it and add your own Prisma models.
-model Page {
-  id   Int    @id @default(autoincrement())
-  name String
+// Enums
+enum ChargeType {
+  rent
+  deposit
+  late_fee
+  utility
+  parking
+  storage
+  credit
+  adjustment
+}
+
+enum PayMethod {
+  ach
+  card
+  cash
+  check
+  other
+}
+
+enum PayStatus {
+  pending
+  succeeded
+  failed
+  refunded
+  disputed
+}
+
+enum LeaseStatus {
+  draft
+  active
+  pending
+  terminated
+  renewed
+}
+
+enum UnitStatus {
+  vacant
+  occupied
+  make_ready
+  maintenance_hold
+}
+
+enum WoPriority {
+  low
+  medium
+  high
+  emergency
+}
+
+enum WoStatus {
+  open
+  in_progress
+  completed
+  cancelled
+}
+
+enum NotificationChannel {
+  email
+  sms
+  push
+  in_app
+}
+
+enum NotificationStatus {
+  queued
+  sent
+  failed
+}
+
+// Core Models
+model Org {
+  id        String   @id @default(cuid())
+  name      String
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  userProfiles      UserProfile[]
+  properties        Property[]
+  workOrders        WorkOrder[]
+  notifications     Notification[]
+  leases            Lease[]
+  leaseParticipants LeaseParticipant[]
+  ledgerEntries     LedgerEntry[]
+  units             Unit[]
+
+  @@map("orgs")
+}
+
+model UserProfile {
+  id           String   @id @default(cuid())
+  orgId        String   @map("org_id")
+  clerkUserId  String   @map("clerk_user_id")
+  email        String
+  fullName     String?  @map("full_name")
+  role         String   // admin, manager, leasing, maintenance, resident
+  phone        String?
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  org                Org                 @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  primaryLeases      Lease[]             @relation("PrimaryResident")
+  leaseParticipants  LeaseParticipant[]
+  requestedWorkOrders WorkOrder[]        @relation("RequestedBy")
+  assignedWorkOrders WorkOrder[]         @relation("AssignedTo")
+  notifications      Notification[]
+
+  @@unique([orgId, clerkUserId])
+  @@map("user_profiles")
+}
+
+model Property {
+  id          String   @id @default(cuid())
+  orgId       String   @map("org_id")
+  name        String
+  addressLine1 String? @map("address_line1")
+  addressLine2 String? @map("address_line2")
+  city        String?
+  state       String?
+  postalCode  String?  @map("postal_code")
+  country     String?
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  org        Org       @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  units      Unit[]
+  workOrders WorkOrder[]
+
+  @@map("properties")
+}
+
+model Unit {
+  id          String    @id @default(cuid())
+  orgId       String    @map("org_id")
+  propertyId  String    @map("property_id")
+  unitNumber  String    @map("unit_number")
+  bedrooms    Int?
+  bathrooms   Int?
+  sqft        Int?
+  marketRent  Decimal   @map("market_rent") @default(0) @db.Decimal(12, 2)
+  status      UnitStatus @default(vacant)
+  amenities   Json      @default("[]")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  org       Org       @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  property  Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  leases    Lease[]
+  workOrders WorkOrder[]
+
+  @@unique([propertyId, unitNumber])
+  @@map("units")
+}
+
+model Lease {
+  id                String      @id @default(cuid())
+  orgId             String      @map("org_id")
+  unitId            String      @map("unit_id")
+  primaryResidentId String      @map("primary_resident_id")
+  startDate         DateTime    @map("start_date") @db.Date
+  endDate           DateTime    @map("end_date") @db.Date
+  rent              Decimal     @db.Decimal(12, 2)
+  deposit           Decimal     @default(0) @db.Decimal(12, 2)
+  status            LeaseStatus @default(draft)
+  docUrl            String?     @map("doc_url")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  org               Org                 @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  unit              Unit                @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  primaryResident   UserProfile         @relation("PrimaryResident", fields: [primaryResidentId], references: [id])
+  participants      LeaseParticipant[]
+  ledgerEntries     LedgerEntry[]
+
+  @@map("leases")
+}
+
+model LeaseParticipant {
+  id            String @id @default(cuid())
+  orgId         String @map("org_id")
+  leaseId       String @map("lease_id")
+  userProfileId String @map("user_profile_id")
+  role          String // resident, guarantor
+
+  // Relations
+  org         Org         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  lease       Lease       @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  userProfile UserProfile @relation(fields: [userProfileId], references: [id])
+
+  @@unique([leaseId, userProfileId])
+  @@map("lease_participants")
+}
+
+model LedgerEntry {
+  id          String      @id @default(cuid())
+  orgId       String      @map("org_id")
+  leaseId     String      @map("lease_id")
+  entryDate   DateTime    @map("entry_date") @db.Date
+  description String?
+  chargeType  ChargeType? @map("charge_type")
+  amount      Decimal     @db.Decimal(12, 2)
+  isCredit    Boolean     @default(false) @map("is_credit")
+  externalRef String?     @map("external_ref")
+  meta        Json        @default("{}")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  // Relations
+  org   Org   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  lease Lease @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+
+  @@map("ledger_entries")
+}
+
+model WorkOrder {
+  id          String     @id @default(cuid())
+  orgId       String     @map("org_id")
+  propertyId  String     @map("property_id")
+  unitId      String?    @map("unit_id")
+  requestedBy String?    @map("requested_by")
+  assignedTo  String?    @map("assigned_to")
+  title       String
+  description String?
+  priority    WoPriority @default(medium)
+  status      WoStatus   @default(open)
+  photos      Json       @default("[]")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  org         Org          @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  property    Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unit        Unit?        @relation(fields: [unitId], references: [id], onDelete: SetNull, map: "work_orders_unit_fkey")
+  requester   UserProfile? @relation("RequestedBy", fields: [requestedBy], references: [id], onDelete: SetNull)
+  assignee    UserProfile? @relation("AssignedTo", fields: [assignedTo], references: [id], onDelete: SetNull)
+
+  @@map("work_orders")
+}
+
+model Notification {
+  id            String             @id @default(cuid())
+  orgId         String             @map("org_id")
+  userProfileId String?            @map("user_profile_id")
+  channel       NotificationChannel
+  template      String
+  payload       Json
+  status        NotificationStatus @default(queued)
+  error         String?
+  createdAt     DateTime           @default(now()) @map("created_at")
+  sentAt        DateTime?          @map("sent_at")
+
+  // Relations
+  org         Org          @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  userProfile UserProfile? @relation(fields: [userProfileId], references: [id], onDelete: SetNull)
+
+  @@map("notifications")
 }
