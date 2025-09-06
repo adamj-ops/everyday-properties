@@ -105,45 +105,45 @@ model Org {
 }
 
 model UserProfile {
-  id           String   @id @default(cuid())
-  orgId        String   @map("org_id")
-  clerkUserId  String   @map("clerk_user_id")
-  email        String
-  fullName     String?  @map("full_name")
-  role         String   // admin, manager, leasing, maintenance, resident
-  phone        String?
-  metadata     Json     @default("{}")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id          String   @id @default(cuid())
+  orgId       String   @map("org_id")
+  clerkUserId String   @map("clerk_user_id")
+  email       String
+  fullName    String?  @map("full_name")
+  role        String // admin, manager, leasing, maintenance, resident
+  phone       String?
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  org                Org                 @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  primaryLeases      Lease[]             @relation("PrimaryResident")
-  leaseParticipants  LeaseParticipant[]
+  org                 Org                @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  primaryLeases       Lease[]            @relation("PrimaryResident")
+  leaseParticipants   LeaseParticipant[]
   requestedWorkOrders WorkOrder[]        @relation("RequestedBy")
-  assignedWorkOrders WorkOrder[]         @relation("AssignedTo")
-  notifications      Notification[]
+  assignedWorkOrders  WorkOrder[]        @relation("AssignedTo")
+  notifications       Notification[]
 
   @@unique([orgId, clerkUserId])
   @@map("user_profiles")
 }
 
 model Property {
-  id          String   @id @default(cuid())
-  orgId       String   @map("org_id")
-  name        String
-  addressLine1 String? @map("address_line1")
-  addressLine2 String? @map("address_line2")
-  city        String?
-  state       String?
-  postalCode  String?  @map("postal_code")
-  country     String?
-  notes       String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(cuid())
+  orgId        String   @map("org_id")
+  name         String
+  addressLine1 String?  @map("address_line1")
+  addressLine2 String?  @map("address_line2")
+  city         String?
+  state        String?
+  postalCode   String?  @map("postal_code")
+  country      String?
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   // Relations
-  org        Org       @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  org        Org         @relation(fields: [orgId], references: [id], onDelete: Cascade)
   units      Unit[]
   workOrders WorkOrder[]
 
@@ -151,23 +151,23 @@ model Property {
 }
 
 model Unit {
-  id          String    @id @default(cuid())
-  orgId       String    @map("org_id")
-  propertyId  String    @map("property_id")
-  unitNumber  String    @map("unit_number")
-  bedrooms    Int?
-  bathrooms   Int?
-  sqft        Int?
-  marketRent  Decimal   @map("market_rent") @default(0) @db.Decimal(12, 2)
-  status      UnitStatus @default(vacant)
-  amenities   Json      @default("[]")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id         String     @id @default(cuid())
+  orgId      String     @map("org_id")
+  propertyId String     @map("property_id")
+  unitNumber String     @map("unit_number")
+  bedrooms   Int?
+  bathrooms  Int?
+  sqft       Int?
+  marketRent Decimal    @default(0) @map("market_rent") @db.Decimal(12, 2)
+  status     UnitStatus @default(vacant)
+  amenities  Json       @default("[]")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
 
   // Relations
-  org       Org       @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  property  Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  leases    Lease[]
+  org        Org         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  property   Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  leases     Lease[]
   workOrders WorkOrder[]
 
   @@unique([propertyId, unitNumber])
@@ -189,11 +189,11 @@ model Lease {
   updatedAt         DateTime    @updatedAt @map("updated_at")
 
   // Relations
-  org               Org                 @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  unit              Unit                @relation(fields: [unitId], references: [id], onDelete: Cascade)
-  primaryResident   UserProfile         @relation("PrimaryResident", fields: [primaryResidentId], references: [id])
-  participants      LeaseParticipant[]
-  ledgerEntries     LedgerEntry[]
+  org             Org                @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  unit            Unit               @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  primaryResident UserProfile        @relation("PrimaryResident", fields: [primaryResidentId], references: [id])
+  participants    LeaseParticipant[]
+  ledgerEntries   LedgerEntry[]
 
   @@map("leases")
 }
@@ -250,26 +250,26 @@ model WorkOrder {
   updatedAt   DateTime   @updatedAt @map("updated_at")
 
   // Relations
-  org         Org          @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  property    Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  unit        Unit?        @relation(fields: [unitId], references: [id], onDelete: SetNull, map: "work_orders_unit_fkey")
-  requester   UserProfile? @relation("RequestedBy", fields: [requestedBy], references: [id], onDelete: SetNull)
-  assignee    UserProfile? @relation("AssignedTo", fields: [assignedTo], references: [id], onDelete: SetNull)
+  org       Org          @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  property  Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unit      Unit?        @relation(fields: [unitId], references: [id], onDelete: SetNull, map: "work_orders_unit_fkey")
+  requester UserProfile? @relation("RequestedBy", fields: [requestedBy], references: [id], onDelete: SetNull)
+  assignee  UserProfile? @relation("AssignedTo", fields: [assignedTo], references: [id], onDelete: SetNull)
 
   @@map("work_orders")
 }
 
 model Notification {
-  id            String             @id @default(cuid())
-  orgId         String             @map("org_id")
-  userProfileId String?            @map("user_profile_id")
+  id            String              @id @default(cuid())
+  orgId         String              @map("org_id")
+  userProfileId String?             @map("user_profile_id")
   channel       NotificationChannel
   template      String
   payload       Json
-  status        NotificationStatus @default(queued)
+  status        NotificationStatus  @default(queued)
   error         String?
-  createdAt     DateTime           @default(now()) @map("created_at")
-  sentAt        DateTime?          @map("sent_at")
+  createdAt     DateTime            @default(now()) @map("created_at")
+  sentAt        DateTime?           @map("sent_at")
 
   // Relations
   org         Org          @relation(fields: [orgId], references: [id], onDelete: Cascade)

@@ -39,9 +39,12 @@ import {
   AnchorIcon,
   BookOpenIcon,
   BotIcon,
+  Building2 as Building2Icon,
   ChevronRightIcon,
+  FileText as FileTextIcon,
   FolderIcon,
   FrameIcon,
+  Home as HomeIcon,
   LifeBuoyIcon,
   MapIcon,
   MoreHorizontalIcon,
@@ -51,6 +54,8 @@ import {
   ShareIcon,
   SquareTerminalIcon,
   Trash2Icon,
+  Users as UsersIcon,
+  Wrench as WrenchIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
@@ -62,93 +67,120 @@ type GlobalSidebarProperties = {
 
 const data = {
   user: {
-    name: 'shadcn',
-    email: 'm@example.com',
-    avatar: '/avatars/shadcn.jpg',
+    name: 'Property Manager',
+    email: 'manager@example.com',
+    avatar: '/avatars/manager.jpg',
   },
   navMain: [
     {
-      title: 'Playground',
-      url: '#',
+      title: 'Dashboard',
+      url: '/',
       icon: SquareTerminalIcon,
       isActive: true,
+    },
+    {
+      title: 'Properties',
+      url: '/properties',
+      icon: Building2Icon,
       items: [
         {
-          title: 'History',
-          url: '#',
+          title: 'All Properties',
+          url: '/properties',
         },
         {
-          title: 'Starred',
-          url: '#',
-        },
-        {
-          title: 'Settings',
-          url: '#',
+          title: 'Add Property',
+          url: '/properties/new',
         },
       ],
     },
     {
-      title: 'Models',
-      url: '#',
-      icon: BotIcon,
+      title: 'Units',
+      url: '/units',
+      icon: HomeIcon,
       items: [
         {
-          title: 'Genesis',
-          url: '#',
+          title: 'All Units',
+          url: '/units',
         },
         {
-          title: 'Explorer',
-          url: '#',
+          title: 'Vacant Units',
+          url: '/units?status=vacant',
         },
         {
-          title: 'Quantum',
-          url: '#',
+          title: 'Occupied Units',
+          url: '/units?status=occupied',
         },
       ],
     },
     {
-      title: 'Documentation',
-      url: '#',
-      icon: BookOpenIcon,
+      title: 'Leases',
+      url: '/leases',
+      icon: FileTextIcon,
       items: [
         {
-          title: 'Introduction',
-          url: '#',
+          title: 'All Leases',
+          url: '/leases',
         },
         {
-          title: 'Get Started',
-          url: '#',
+          title: 'Active Leases',
+          url: '/leases?status=active',
         },
         {
-          title: 'Tutorials',
-          url: '#',
+          title: 'Expiring Soon',
+          url: '/leases?expiring=30',
+        },
+      ],
+    },
+    {
+      title: 'Tenants',
+      url: '/tenants',
+      icon: UsersIcon,
+      items: [
+        {
+          title: 'All Tenants',
+          url: '/tenants',
         },
         {
-          title: 'Changelog',
-          url: '#',
+          title: 'Invite Tenant',
+          url: '/tenants/invite',
+        },
+      ],
+    },
+    {
+      title: 'Work Orders',
+      url: '/work-orders',
+      icon: WrenchIcon,
+      items: [
+        {
+          title: 'All Work Orders',
+          url: '/work-orders',
+        },
+        {
+          title: 'Open',
+          url: '/work-orders?status=open',
+        },
+        {
+          title: 'In Progress',
+          url: '/work-orders?status=in_progress',
         },
       ],
     },
     {
       title: 'Settings',
-      url: '#',
+      url: '/settings',
       icon: Settings2Icon,
       items: [
         {
-          title: 'General',
-          url: '#',
+          title: 'Organization',
+          url: '/settings/organization',
         },
         {
-          title: 'Team',
-          url: '#',
+          title: 'Users',
+          url: '/settings/users',
         },
         {
-          title: 'Billing',
-          url: '#',
-        },
-        {
-          title: 'Limits',
-          url: '#',
+          title: 'Preferences',
+          url: '/settings/preferences',
         },
       ],
     },
@@ -170,23 +202,7 @@ const data = {
       icon: SendIcon,
     },
   ],
-  projects: [
-    {
-      name: 'Design Engineering',
-      url: '#',
-      icon: FrameIcon,
-    },
-    {
-      name: 'Sales & Marketing',
-      url: '#',
-      icon: PieChartIcon,
-    },
-    {
-      name: 'Travel',
-      url: '#',
-      icon: MapIcon,
-    },
-  ],
+  projects: [],
 };
 
 export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
@@ -357,3 +373,4 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
     </>
   );
 };
+
