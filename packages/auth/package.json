@@ -22,7 +22,7 @@
   "devDependencies": {
     "@clerk/types": "^4.59.1",
     "@repo/typescript-config": "*",
-    "@types/node": "22.15.21",
+    "@types/node": "24.3.1",
     "@types/react": "19.1.5",
     "@types/react-dom": "^19.1.5",
     "@vitest/coverage-v8": "^3.2.4",
